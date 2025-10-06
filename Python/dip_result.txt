@@ -1,0 +1,19 @@
+=== DIP PIPELINE (Pillow for I/O; logic = pure Python) ===
+[Input] C:\Users\USER\Desktop\DIP Phase I (HE, TS & GP)\Python\picture.jpg
+[Load] size = 4000x3000
+[HistEq] done
+[Threshold] T = 128
+[Geo] area=5965869, centroid=(2026.05,2011.09)
+[RawMoment] M00=5965869.0000, M10=12087146038.0000, M01=11997888069.0000
+[CentralMoment] mu20=7523080565442.2246, mu02=2815982860371.6294, mu11=887996834817.4943
+[Hu] 7 invariants:
+  φ1: 0.290492
+  φ2: 0.019981
+  φ3: 0.001702
+  φ4: 0.000514
+  φ5: 0.000000
+  φ6: 0.000000
+  φ7: 0.000000
+[Shape(Hu)] rectangle (distance=12.066815)
+[ML] label = กระดาษ A4 แนวนอน (NN distance=12.066138)
+[Saved] out_gray.png, out_equalized.png, out_threshold.png, out_overlay.png

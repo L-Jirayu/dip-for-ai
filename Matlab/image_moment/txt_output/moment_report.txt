@@ -1,0 +1,28 @@
+Raw Moments
+M00 = 319481.00
+M10 = 220.24,  M01 = 503.14
+Centroid (x̄, ȳ) = (220.24, 503.14)
+
+Central Moments
+mu00 = 319481.00
+mu11 = -23615799163.26
+mu20 = 31856772087.22
+mu02 = 48675743979.77
+
+Hu Moments (raw)
+phi1 = 7.890076e-01
+phi2 = 2.412868e-01
+phi3 = 2.232749e-01
+phi4 = 5.420749e-01
+phi5 = 1.739499e-01
+phi6 = 2.659302e-01
+phi7 = -7.284242e-02
+
+Hu Moments (sign-log)
+phi1_log = 0.102919
+phi2_log = 0.617466
+phi3_log = 0.651160
+phi4_log = 0.265941
+phi5_log = 0.759576
+phi6_log = 0.575232
+phi7_log = -1.137616

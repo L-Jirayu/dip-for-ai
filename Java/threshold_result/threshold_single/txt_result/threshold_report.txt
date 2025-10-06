@@ -1,0 +1,21 @@
+Input file: equalized.png
+Size (I,J): 512, 512
+N (pixels): 262144
+Threshold T: 128
+Note: In both binary images, we use 1=white(255) and 0=black(0).
+
+--- Pixel counts ---
+threshold_1: white(1)=132924
+threshold_0: black(0)=129220
+
+=== Geometric Properties on threshold_1 (1=white=gray>=T) ===
+  -- WHITE (1) --
+     Area: 132924 pixels
+     Centroid: (x=289.014, y=242.293)  [x=column(j), y=row(i)]
+     BBox (rows i, cols j): [i_min=0, j_min=0] .. [i_max=511, j_max=511]
+
+=== Geometric Properties on threshold_0 (0=black=gray<T) ===
+  -- BLACK (0) --
+     Area: 129220 pixels
+     Centroid: (x=221.026, y=269.086)  [x=column(j), y=row(i)]
+     BBox (rows i, cols j): [i_min=0, j_min=0] .. [i_max=511, j_max=511]

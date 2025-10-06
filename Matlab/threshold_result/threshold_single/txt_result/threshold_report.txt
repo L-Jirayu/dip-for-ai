@@ -1,0 +1,20 @@
+Input file: C:\Users\USER\Desktop\DIP Phase I (How to AI processing Image)\Matlab\equalized.png
+Size (I,J): 640, 960
+N (pixels): 614400
+Threshold T: 128
+
+--- Pixel sizes ---
+threshold_1: white(1)=319481
+threshold_0: black(0)=294919
+
+=== Geometric Properties on threshold_1 (1=white=gray>=T) ===
+  -- WHITE (1) --
+     Area: 319481 pixels
+     Centroid: (x=504.138, y=221.236)  [x=column(j), y=row(i)]
+     BBox (rows i, cols j): [i_min=1, j_min=1] .. [i_max=640, j_max=960]
+
+=== Geometric Properties on threshold_0 (0=black=gray<T) ===
+  -- BLACK (0) --
+     Area: 319481 pixels
+     Centroid: (x=504.138, y=221.236)  [x=column(j), y=row(i)]
+     BBox (rows i, cols j): [i_min=1, j_min=1] .. [i_max=640, j_max=960]

@@ -1,0 +1,20 @@
+Input file: equalized.png
+Size (I,J): 512, 512
+N (pixels): 262144
+Thresholds (inclusive): T1=85  T2=170
+
+--- Pixel counts ---
+between_1: In-range white(1)=89570, black(0)=172574
+between_0: Out-range black(0)=172574
+
+=== Geometric Properties on between_1 (T1<=x<=T2, white=1) ===
+  -- WHITE (1) --
+     Area: 89570 pixels
+     Centroid: (x=244.757, y=226.307)
+     BBox: [i_min=0, j_min=0] .. [i_max=511, j_max=511]
+
+=== Geometric Properties on between_0 (outside, black=0) ===
+  -- BLACK (0) --
+     Area: 172574 pixels
+     Centroid: (x=261.076, y=270.652)
+     BBox: [i_min=0, j_min=0] .. [i_max=511, j_max=511]
