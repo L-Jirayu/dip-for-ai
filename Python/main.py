@@ -16,8 +16,11 @@ from dip import (
     hu_moments,
     save_visualizations_png,
     detect_shape_by_hu,
+    plot_histogram,
+    plot_cdf,
+    plot_histogram_equalization,
 )
-from maclearn import extract_features, build_default_classifier
+from maclearn import train_ml, predict_with_ml
 
 def main():
     # เลือกไฟล์อัตโนมัติถ้าไม่ส่งอาร์กิวเมนต์
@@ -42,14 +45,21 @@ def main():
     log(f"[Input] {path}")
 
     # 1) Load → grayscale (0..255)
-    gray = read_image_grayscale(path)     # Pillow อ่านได้ทั้ง .jpg/.png
+    gray = read_image_grayscale(path)
     H, W = len(gray), len(gray[0])
     log(f"[Load] size = {W}x{H}")
-    gray = rgb_to_grayscale(gray)         # safety (โนออปถ้าเป็น 2D อยู่แล้ว)
+    gray = rgb_to_grayscale(gray)  # safety
+
+    # 1.5) Plot histogram / CDF
+    plot_histogram(gray, "histogram_input.png")
+    plot_cdf(gray, "cdf_input.png")
+    log("[Plots] histogram_input.png, cdf_input.png")
 
     # 2) Histogram Equalization
     eq = histogram_equalize(gray)
     log("[HistEq] done")
+    plot_histogram_equalization(eq, "histogram_equalized.png")
+    log("[Plots] histogram_equalized.png")
 
     # 3) Thresholding
     log(f"[Threshold] T = {T}")
@@ -85,13 +95,17 @@ def main():
     shape_name, shape_dist = detect_shape_by_hu(mask)
     log(f"[Shape(Hu)] {shape_name} (distance={shape_dist:.6f})")
 
-    # 5) ML — label
-    feat = extract_features(mask)
-    clf = build_default_classifier()
-    label, dist = clf.predict(feat)
-    log(f"[ML] label = {label} (NN distance={dist:.6f})")
+        # ---------------- ML ----------------
+    log("[ML] Training classifiers on mock dataset (Hu-only, 4 shapes)...")
+    clf_dt, clf_rf = train_ml()
 
-    # Save visuals (.png)
+    label_dt,  prob_dt  = predict_with_ml(mask, clf_dt)
+    label_rf,  prob_rf  = predict_with_ml(mask, clf_rf)
+
+    log(f"[ML] Decision Tree label = {label_dt} ({prob_dt:.2f}%)")
+    log(f"[ML] Random Forest  label = {label_rf} ({prob_rf:.2f}%)")
+
+    # Save visuals
     save_visualizations_png(gray, eq, mask, (Cx, Cy), (xc, yc))
     log("[Saved] out_gray.png, out_equalized.png, out_threshold.png, out_overlay.png")
 

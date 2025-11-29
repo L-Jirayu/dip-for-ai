@@ -2,15 +2,15 @@
 # ใช้ Pillow เฉพาะงาน I/O (อ่าน/เขียนภาพ), ส่วนอัลกอริทึม DIP/คณิต ทำเองล้วน
 import math
 from PIL import Image  # pip install pillow
+import matplotlib.pyplot as plt  # pip install matplotlib
+import os
 
 # ---------------- Image I/O (read → grayscale 0..255) ----------------
 def read_image_grayscale(path):
-    # เปิดด้วย Pillow แล้วบังคับไปโหมด L (8-bit grayscale)
     with Image.open(path) as im:
         im = im.convert("L")
         w, h = im.size
         pix = list(im.getdata())  # flat list len = w*h
-    # สร้าง 2D matrix [h][w] ค่าช่วง 0..255
     gray = [pix[i*w:(i+1)*w] for i in range(h)]
     return gray
 
@@ -55,13 +55,11 @@ def gray_to_rgb(gray):
     return out
 
 def draw_cross(rgb, x, y, size, color, thickness=5):
-    """วาดกากบาทหนา: size = ความยาวครึ่งหนึ่ง, thickness = ความหนา (พิกเซล)"""
     h = len(rgb)
     w = len(rgb[0]) if h > 0 else 0
     xi, yi = int(round(x)), int(round(y))
     half_t = max(1, thickness // 2)
 
-    # แถบแนวนอน
     for dx in range(-size, size + 1):
         xx = xi + dx
         for ty in range(-half_t, half_t + 1):
@@ -69,7 +67,6 @@ def draw_cross(rgb, x, y, size, color, thickness=5):
             if 0 <= xx < w and 0 <= yy < h:
                 rgb[yy][xx] = list(color)
 
-    # แถบแนวตั้ง
     for dy in range(-size, size + 1):
         yy = yi + dy
         for tx in range(-half_t, half_t + 1):
@@ -77,9 +74,7 @@ def draw_cross(rgb, x, y, size, color, thickness=5):
             if 0 <= xx < w and 0 <= yy < h:
                 rgb[yy][xx] = list(color)
 
-
 def draw_line(rgb, x0, y0, x1, y1, color, thickness=4):
-    """วาดเส้นตรงหนาแบบ Bresenham + ความหนา (วาดเป็นสี่เหลี่ยมรอบจุดบนเส้น)"""
     h = len(rgb)
     w = len(rgb[0]) if h > 0 else 0
     x0 = int(round(x0)); y0 = int(round(y0))
@@ -91,7 +86,6 @@ def draw_line(rgb, x0, y0, x1, y1, color, thickness=4):
     half_t = max(1, thickness // 2)
 
     def stamp(xx, yy):
-        # ปั๊มสี่เหลี่ยมหนารอบพิกเซล (xx,yy)
         for oy in range(-half_t, half_t + 1):
             ry = yy + oy
             if 0 <= ry < h:
@@ -113,14 +107,13 @@ def draw_line(rgb, x0, y0, x1, y1, color, thickness=4):
 
 # ---------------- DIP core ----------------
 def rgb_to_grayscale(img):
-    # ถ้าเป็น 2D int อยู่แล้ว คืนทันที
     if isinstance(img[0][0], int):
         return img
     h = len(img); w = len(img[0])
     out = [[0]*w for _ in range(h)]
     for y in range(h):
         for x in range(w):
-            r, g, b = img[y][x][0], img[y][x][1], img[y][x][2]
+            r, g, b = img[y][x]
             yv = int(round(0.299*r + 0.587*g + 0.114*b))
             out[y][x] = 0 if yv < 0 else (255 if yv > 255 else yv)
     return out
@@ -151,10 +144,56 @@ def histogram_equalize(img):
         for x in range(W):
             v = img[y][x]
             eq = round((cdf[v] - cdf_min) / denom * 255)
-            if eq < 0: eq = 0
-            if eq > 255: eq = 255
+            eq = 0 if eq < 0 else (255 if eq > 255 else eq)
             out[y][x] = int(eq)
     return out
+
+# ---------------- Histogram / CDF / Equalization plotting ----------------
+HE_GRAPH_DIR = "he_graph"
+
+def _ensure_he_graph_dir():
+    if not os.path.exists(HE_GRAPH_DIR):
+        os.makedirs(HE_GRAPH_DIR)
+
+def plot_histogram(img, filename="histogram.png"):
+    _ensure_he_graph_dir()
+    hst = histogram_256(img)
+    plt.figure()
+    plt.bar(range(256), hst, color='gray')
+    plt.title("Histogram")
+    plt.xlabel("Pixel Value")
+    plt.ylabel("Count")
+    plt.savefig(os.path.join(HE_GRAPH_DIR, filename))
+    plt.close()
+
+def plot_cdf(img, filename="cdf.png"):
+    _ensure_he_graph_dir()
+    hst = histogram_256(img)
+    total = sum(hst)
+    cdf = [sum(hst[:i+1])/total for i in range(256)]
+    plt.figure()
+    plt.plot(range(256), cdf, color='blue')
+    plt.title("CDF")
+    plt.xlabel("Pixel Value")
+    plt.ylabel("CDF")
+    plt.grid(True)
+    plt.savefig(os.path.join(HE_GRAPH_DIR, filename))
+    plt.close()
+
+def plot_histogram_equalization(img, filename="histogram_equalization.png"):
+    _ensure_he_graph_dir()
+    eq = histogram_equalize(img)
+    
+    # สร้าง figure ใหม่ พร้อม title ที่ถูกต้อง
+    hst = histogram_256(eq)
+    plt.figure()
+    plt.bar(range(256), hst, color='gray')
+    plt.title("Histogram Equalization")   # <-- แก้ตรงนี้
+    plt.xlabel("Pixel Value")
+    plt.ylabel("Count")
+    plt.savefig(os.path.join(HE_GRAPH_DIR, filename))
+    plt.close()
+
 
 def threshold_binary(img, T):
     H, W = len(img), len(img[0])
@@ -242,29 +281,21 @@ def _principal_axis(mask, xc, yc):
     return (x0, y0, x1, y1)
 
 def save_visualizations_png(gray, eq, mask, centroid_raw, centroid_for_central):
-    # เซฟแต่ละสเต็ปไว้ดู
     save_png_gray("out_gray.png", gray)
     save_png_gray("out_equalized.png", eq)
 
-    # ทำภาพ threshold (0/255) จาก mask
     H, W = len(mask), len(mask[0])
     thresh = [[255 if mask[y][x] else 0 for x in range(W)] for y in range(H)]
     save_png_gray("out_threshold.png", thresh)
 
-    # >>> เปลี่ยนฐานของ out_overlay: ใช้ "threshold" แทน "equalized"
     base = gray_to_rgb(thresh)
-
-    # วาด centroid/raw (แดง) และ centroid ที่ใช้ central/Hu (ฟ้า) + แกนหลัก (เขียว)
     cx_raw, cy_raw = centroid_raw
     cx_c, cy_c = centroid_for_central
-
-    draw_cross(base, cx_raw, cy_raw, size=10, color=(255, 0, 0), thickness=108)       # แดง หนา
-    draw_cross(base, cx_c,  cy_c,  size=8,  color=(0, 170, 255), thickness=108)       # ฟ้า หนา
-
+    draw_cross(base, cx_raw, cy_raw, size=10, color=(255, 0, 0), thickness=108)
+    draw_cross(base, cx_c,  cy_c,  size=8,  color=(0, 170, 255), thickness=108)
     x0, y0, x1, y1 = _principal_axis(mask, cx_c, cy_c)
-    draw_line(base, x0, y0, x1, y1, color=(0, 255, 0), thickness=12)                # เขียว หนา
-
-    save_png_rgb("out_overlay.png", base)  # overlay บนภาพ threshold
+    draw_line(base, x0, y0, x1, y1, color=(0, 255, 0), thickness=12)
+    save_png_rgb("out_overlay.png", base)
 
 # ---------------- Hu-based shape detection ----------------
 def _hu_log_abs(vec):
@@ -322,10 +353,10 @@ def _tri_equilateral_mask(N, side=None):
 def _build_hu_templates(N=200):
     templ = {}
     for name, M in [
-        ("circle",    _circle_mask(N)),
-        ("square",    _square_mask(N)),
-        ("rectangle", _rect_mask(N, 0.7, 0.35)),
-        ("triangle",  _tri_equilateral_mask(N)),
+        ("Circle",    _circle_mask(N)),
+        ("Square",    _square_mask(N)),
+        ("Rectangle", _rect_mask(N, 0.7, 0.35)),
+        ("Triangle",  _tri_equilateral_mask(N)),
     ]:
         templ[name] = _hu_log_abs(hu_moments(M))
     return templ
@@ -336,9 +367,9 @@ def detect_shape_by_hu(mask, templates=None):
     v = _hu_log_abs(hu_moments(mask))
     best_name, best_d = None, 1e18
     for name, t in templates.items():
-        d = 0.0
-        for a, b in zip(v, t):
-            d += (a - b) * (a - b)
+        d = sum((a - b)**2 for a, b in zip(v, t))
         if d < best_d:
             best_d, best_name = d, name
     return best_name, math.sqrt(best_d)
+
+
