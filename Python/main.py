@@ -103,7 +103,7 @@ def main():
     label_rf,  prob_rf  = predict_with_ml(mask, clf_rf)
 
     log(f"[ML] Decision Tree label = {label_dt} ({prob_dt:.2f}%)")
-    log(f"[ML] Random Forest  label = {label_rf} ({prob_rf:.2f}%)")
+    log(f"[ML] Random Forest label = {label_rf} ({prob_rf:.2f}%)")
 
     # Save visuals
     save_visualizations_png(gray, eq, mask, (Cx, Cy), (xc, yc))
