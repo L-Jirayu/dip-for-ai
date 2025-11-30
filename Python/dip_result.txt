@@ -19,5 +19,5 @@
 [Shape(Hu)] Rectangle (distance=12.066815)
 [ML] Training classifiers on mock dataset (Hu-only, 4 shapes)...
 [ML] Decision Tree label = Rectangle (100.00%)
-[ML] Random Forest  label = Rectangle (64.00%)
+[ML] Random Forest label = Rectangle (68.00%)
 [Saved] out_gray.png, out_equalized.png, out_threshold.png, out_overlay.png
