@@ -236,19 +236,96 @@ def _triangle(N, side=None):
     return M
 
 
+# [เพิ่มส่วนนี้ใน maclearn.py ต่อท้ายหรือไว้ก่อน train_ml ก็ได้]
+
+def k_fold_cross_validation(model_class, X, y, k=5, model_params=None):
+    """
+    ทำ K-Fold แบบ Pure Python
+    model_class: ชื่อ class ของโมเดล (เช่น PureDecisionTree)
+    model_params: dict พารามิเตอร์ของโมเดล (เช่น {'max_depth': 10})
+    """
+    if model_params is None: model_params = {}
+    
+    # 1. รวม X, y แล้วสลับ (Shuffle)
+    data = list(zip(X, y))
+    random.shuffle(data)
+    
+    n_samples = len(data)
+    fold_size = n_samples // k
+    
+    accuracies = []
+    print(f"\n--- Starting {k}-Fold Cross Validation ---")
+    
+    for i in range(k):
+        # 2. แบ่งข้อมูล (Slicing)
+        start = i * fold_size
+        end = (i + 1) * fold_size
+        
+        # ก้อนที่เป็น Test (ข้อสอบ)
+        test_data = data[start:end]
+        # ก้อนที่เป็น Train (เอาส่วนหน้า + ส่วนหลัง มารวมกัน)
+        train_data = data[:start] + data[end:]
+        
+        # แยกกลับเป็น X, y
+        X_train = [d[0] for d in train_data]
+        y_train = [d[1] for d in train_data]
+        X_test  = [d[0] for d in test_data]
+        y_test  = [d[1] for d in test_data]
+        
+        # 3. สร้างและเทรนโมเดลใหม่
+        model = model_class(**model_params)
+        model.fit(X_train, y_train)
+        
+        # 4. วัดผล
+        preds = model.predict(X_test)
+        correct = sum(1 for p, t in zip(preds, y_test) if p == t)
+        acc = (correct / len(y_test)) * 100 if len(y_test) > 0 else 0
+        
+        accuracies.append(acc)
+        print(f"Fold {i+1}/{k}: Accuracy = {acc:.2f}% (Train={len(X_train)}, Test={len(X_test)})")
+        
+    avg_acc = sum(accuracies) / k
+    print(f"Average Accuracy: {avg_acc:.2f}%")
+    print("---------------------------------------")
+    return avg_acc
+
+# ---------------------------------------------------------
+# แก้ไข build_mock_dataset อันเดิม ให้มี Loop (Data Augmentation)
+# ไม่งั้น K-Fold จะพังเพราะข้อมูลไม่พอ
+# ---------------------------------------------------------
 def build_mock_dataset():
     N = 200
     X = []
     y = []
 
     def add(label, mask):
-        X.append(extract_features(mask))
-        y.append(label)
+        try:
+            feat = extract_features(mask)
+            # กรองค่า NaN หรือ infinity
+            if all(isinstance(f, (int, float)) for f in feat):
+                X.append(feat)
+                y.append(label)
+        except: pass
 
-    add("Circle", _circle(N))
-    add("Square", _square(N))
-    add("Triangle", _triangle(N))
-    add("Rectangle", _rectangle(N))
+    # ปั๊มข้อมูลอย่างละ 20-30 ตัว เพื่อให้ K-Fold มีของให้เล่น
+    # (ลดจำนวนลงหน่อยจะได้รันเร็วขึ้น)
+    for _ in range(25):
+        r = random.randint(20, 90)
+        add("Circle", _circle(N, r=r))
+
+    for _ in range(25):
+        s = random.randint(30, 150)
+        add("Square", _square(N, side=s))
+
+    for _ in range(25):
+        s = random.randint(40, 160)
+        add("Triangle", _triangle(N, side=s))
+
+    for _ in range(25):
+        w = random.randint(40, 160)
+        h = random.randint(30, 100)
+        if abs(w - h) < 30: w += 40 # บังคับให้เป็นผืนผ้าชัดๆ
+        add("Rectangle", _rectangle(N, wr=w/N, hr=h/N))
 
     return X, y
 

@@ -3,6 +3,7 @@
 # ถ้าไม่ส่งอาร์กิวเมนต์: จะลองหา picture.png หรือ picture.jpg ในโฟลเดอร์เดียวกัน
 import sys, os
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from maclearn import train_ml, predict_with_ml, build_mock_dataset, k_fold_cross_validation, PureDecisionTree, PureRandomForest
 
 from dip import (
     read_image_grayscale,
@@ -95,15 +96,36 @@ def main():
     shape_name, shape_dist = detect_shape_by_hu(mask)
     log(f"[Shape(Hu)] {shape_name} (distance={shape_dist:.6f})")
 
-        # ---------------- ML ----------------
-    log("[ML] Training classifiers on mock dataset (Hu-only, 4 shapes)...")
-    clf_dt, clf_rf = train_ml()
+    # =========================================================
+    # ส่วนที่เพิ่ม: K-Fold Validation (เพื่อโชว์ความเก๋า)
+    # =========================================================
+    log("\n[K-Fold] Validating Models with Augmented Data...")
+    
+    # โหลดข้อมูลมาเพื่อทำ K-Fold
+    X_mock, y_mock = build_mock_dataset()
+    log(f"[Dataset] Generated {len(X_mock)} samples for validation.")
+
+    # ทดสอบ Decision Tree
+    log(">> Testing Decision Tree (5-Fold):")
+    acc_dt = k_fold_cross_validation(PureDecisionTree, X_mock, y_mock, k=5, model_params={'max_depth': 10})
+    log(f"   Decision Tree Avg Accuracy: {acc_dt:.2f}%")
+
+    # ทดสอบ Random Forest
+    log(">> Testing Random Forest (5-Fold):")
+    acc_rf = k_fold_cross_validation(PureRandomForest, X_mock, y_mock, k=5, model_params={'n_estimators': 20, 'max_depth': 10})
+    log(f"   Random Forest Avg Accuracy: {acc_rf:.2f}%")
+
+    # =========================================================
+    # ส่วนเดิม: Train Final Model (ใช้ข้อมูลทั้งหมด) เพื่อทำนายภาพจริง
+    # =========================================================
+    log("\n[ML] Training Final Model on ALL mock data...")
+    clf_dt, clf_rf = train_ml() # train_ml จะไปเรียก build_mock_dataset ตัวใหม่เอง
 
     label_dt,  prob_dt  = predict_with_ml(mask, clf_dt)
     label_rf,  prob_rf  = predict_with_ml(mask, clf_rf)
 
-    log(f"[ML] Decision Tree label = {label_dt} ({prob_dt:.2f}%)")
-    log(f"[ML] Random Forest label = {label_rf} ({prob_rf:.2f}%)")
+    log(f"[Result] Decision Tree predicted: {label_dt} ({prob_dt:.2f}%)")
+    log(f"[Result] Random Forest predicted: {label_rf} ({prob_rf:.2f}%)")
 
     # Save visuals
     save_visualizations_png(gray, eq, mask, (Cx, Cy), (xc, yc))

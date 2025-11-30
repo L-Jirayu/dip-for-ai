@@ -17,7 +17,15 @@
   φ6: 0.000000
   φ7: 0.000000
 [Shape(Hu)] Rectangle (distance=12.066815)
-[ML] Training classifiers on mock dataset (Hu-only, 4 shapes)...
-[ML] Decision Tree label = Rectangle (100.00%)
-[ML] Random Forest label = Rectangle (68.00%)
+
+[K-Fold] Validating Models with Augmented Data...
+[Dataset] Generated 100 samples for validation.
+>> Testing Decision Tree (5-Fold):
+   Decision Tree Avg Accuracy: 98.00%
+>> Testing Random Forest (5-Fold):
+   Random Forest Avg Accuracy: 97.00%
+
+[ML] Training Final Model on ALL mock data...
+[Result] Decision Tree predicted: Rectangle (100.00%)
+[Result] Random Forest predicted: Rectangle (100.00%)
 [Saved] out_gray.png, out_equalized.png, out_threshold.png, out_overlay.png
